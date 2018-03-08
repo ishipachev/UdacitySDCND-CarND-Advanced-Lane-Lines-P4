@@ -2,6 +2,7 @@ import numpy as np
 import cv2
 import matplotlib.pyplot as plt
 import os
+import matplotlib.cm as cm
 
 # Define a function that takes an image, gradient orientation,
 # and threshold min / max values.
@@ -153,6 +154,6 @@ for i in range(len(pic_list)):
 plt.show()
 
 # Save all pics in output folder
-# for i in range(len(pic_list)):
-#     plt.imsave(os.path.join('output', title_list[i] + '.jpg'), pic_list[i])
+for i in range(len(pic_list)):
+    plt.imsave(os.path.join('output', title_list[i] + '.jpg'), pic_list[i], cmap=cm.gray)
 
