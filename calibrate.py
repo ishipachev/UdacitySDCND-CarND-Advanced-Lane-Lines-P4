@@ -12,8 +12,8 @@ objp = np.zeros((ny*nx, 3), np.float32)
 objp[:,:2] = np.mgrid[0:nx, 0:ny].T.reshape(-1, 2)
 
 # Arrays to store object points and image points from all the images.
-objpoints = [] # 3d points in real world space
-imgpoints = [] # 2d points in image plane.
+objpoints = []  # 3d points in real world space
+imgpoints = []  # 2d points in image plane.
 
 # Make a list of calibration images
 images = glob.glob('camera_cal/calibration*.jpg')

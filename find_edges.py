@@ -93,6 +93,7 @@ def get_s_channel(img):
     s_channel = hls[:, :, 2]
     return s_channel
 
+
 def color_thresh(s_channel, s_thresh=(0, 255)):
     # Threshold color channel
     binary_output = np.zeros_like(s_channel)
@@ -102,7 +103,14 @@ def color_thresh(s_channel, s_thresh=(0, 255)):
     # be beneficial to replace this channel with something else.
     return binary_output
 
-fname = "test_images/straight_lines1.jpg"
+
+# Main function to get edges from picture
+def find_edges(img):
+    s_channel = get_s_channel(img)
+    s_binary = color_thresh(s_channel, s_thresh=(170, 255))
+    return s_binary
+
+fname = "test_images/test2.jpg"
 image = cv2.imread(fname)
 
 # Choose a Sobel kernel size

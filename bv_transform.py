@@ -21,54 +21,34 @@ img_path = 'output/s_binary.jpg'
 img = cv2.imread(img_path, 0)
 img_size = (img.shape[0], img.shape[1])
 
-# point1 = np.array([180, 660], dtype=np.float32)
-# w1 = 100
-# w2 = 920
-# d = (w2-w1)/2
-# h = 215
-#
-# point2 = np.zeros_like(point1)
-# point2[0] = point1[0] + d
-# point2[1] = point1[1] - h
-# point3 = np.copy(point2)
-# point3[0] = point2[0] + w1
-# point4 = np.copy(point1)
-# point4[0] = point1[0] + w2
 
-point1 = np.array([265, 677], dtype=np.float32)
-point2 = np.array([556, 477], dtype=np.float32)
-point3 = np.array([747, 477], dtype=np.float32)
-point4 = np.array([1038, 677], dtype=np.float32)
-
-src = np.array([point1, point2, point3, point4])
-
-offset = 50
-# dst = np.float32([[offset, img_size[1]-offset],
-#                   [offset, offset],
-#                   [img_size[0]-offset, offset],
-#                   [img_size[0]-offset, img_size[1]-offset]])
-
-dst = np.float32([[offset, img_size[1]],
-                  [offset, 0],
-                  [img_size[0]-offset, 0],
-                  [img_size[0]-offset, img_size[1]]])
-
-# dst = np.float32([[offset, offset], [img_size[0] - offset, offset],
-#                   [img_size[0] - offset, img_size[1] - offset],
-#                   [offset, img_size[1] - offset]])
-
-print(src)
-print(dst)
-# # MODIFY THIS FUNCTION TO GENERATE OUTPUT
-# # THAT LOOKS LIKE THE IMAGE ABOVE
 def corners_unwarp(undist, src, dst):
+    img_size = img.shape[0:2]
     # Given src and dst points, calculate the perspective transform matrix
     M = cv2.getPerspectiveTransform(src, dst)
     warped = cv2.warpPerspective(undist, M, img_size)
     return warped, M
 
 
-warped, M = corners_unwarp(img, src, dst)
+def bv_transform(img):
+    img_size = img.shape[0:2]
+    point1 = np.array([265, 677], dtype=np.float32)
+    point2 = np.array([556, 477], dtype=np.float32)
+    point3 = np.array([747, 477], dtype=np.float32)
+    point4 = np.array([1038, 677], dtype=np.float32)
+
+    src = np.array([point1, point2, point3, point4])
+    offset = 50
+
+    dst = np.float32([[offset, img_size[1]],
+                      [offset, 0],
+                      [img_size[0] - offset, 0],
+                      [img_size[0] - offset, img_size[1]]])
+    warped, M = corners_unwarp(img, src, dst)
+    return warped, M
+
+
+warped, M = bv_transform(img)
 
 print(warped.shape)
 
