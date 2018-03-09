@@ -1,9 +1,9 @@
 import numpy as np
 import cv2
-import matplotlib.pyplot as plt
 
-path_binary_warped = "output/binary_warped.jpg"
-binary_warped = cv2.imread(path_binary_warped, 0)
+
+# path_binary_warped = "output/binary_warped.jpg"
+# binary_warped = cv2.imread(path_binary_warped, 0)
 
 def line_fit(binary_warped):
     # Assuming you have created a warped binary image called "binary_warped"
@@ -80,8 +80,8 @@ def line_fit(binary_warped):
 
     # Generate x and y values for plotting
     ploty = np.linspace(0, binary_warped.shape[0] - 1, binary_warped.shape[0])
-    left_fitx = left_fit[0] * ploty ** 2 + left_fit[1] * ploty + left_fit[2]
-    right_fitx = right_fit[0] * ploty ** 2 + right_fit[1] * ploty + right_fit[2]
+    # left_fitx = left_fit[0] * ploty ** 2 + left_fit[1] * ploty + left_fit[2]
+    # right_fitx = right_fit[0] * ploty ** 2 + right_fit[1] * ploty + right_fit[2]
 
     # out_img[nonzeroy[left_lane_inds], nonzerox[left_lane_inds]] = [255, 0, 0]
     # out_img[nonzeroy[right_lane_inds], nonzerox[right_lane_inds]] = [0, 0, 255]
@@ -92,39 +92,46 @@ def line_fit(binary_warped):
     # plt.ylim(1280, 0)
     # plt.show()
 
-    return left_fit, right_fit, leftx, lefty, rightx, righty, ploty
 
+    ym_per_pix = 30/1280  # meters per pixel in y dimension
+    xm_per_pix = 3.7/620  # meters per pixel in x dimension
+    y_eval = np.max(ploty) // 2
+    left_fit_cr = np.polyfit(lefty*ym_per_pix, leftx*xm_per_pix, 2)
+    right_fit_cr = np.polyfit(righty*ym_per_pix, rightx*xm_per_pix, 2)
+    left_curverad = ((1 + (2*left_fit_cr[0]*y_eval + left_fit_cr[1])**2)**1.5) / np.absolute(2*left_fit_cr[0])
+    right_curverad = ((1 + (2*right_fit_cr[0]*y_eval + right_fit_cr[1])**2)**1.5) / np.absolute(2*right_fit_cr[0])
 
-left_fit, right_fit, leftx, lefty, rightx, righty, ploty = line_fit(binary_warped)
+    return left_fit, right_fit, left_curverad, right_curverad
 
-
-print(left_fit)
-print(right_fit)
-
-
-
-
-## Calculate curvature
-
-y_eval = np.max(ploty)
-
-ym_per_pix = 20/1280  # meters per pixel in y dimension
-xm_per_pix = 3.7/620  # meters per pixel in x dimension
-
-# xm_per_pix = 50/1280  # meters per pixel in y dimension
-# ym_per_pix = 3.7/620  # meters per pixel in x dimension
-
-
-# Fit new polynomials to x,y in world space
-left_fit_cr = np.polyfit(lefty*ym_per_pix, leftx*xm_per_pix, 2)
-right_fit_cr = np.polyfit(righty*ym_per_pix, rightx*xm_per_pix, 2)
-
-print(left_fit_cr, right_fit_cr)
-# left_fit_cr = left_fitx
-# right_fit_cr = right_fitx
-# Calculate the new radii of curvature
-y_eval = np.max(ploty)//2
-left_curverad = ((1 + (2*left_fit_cr[0]*y_eval + left_fit_cr[1])**2)**1.5) / np.absolute(2*left_fit_cr[0])
-right_curverad = ((1 + (2*right_fit_cr[0]*y_eval + right_fit_cr[1])**2)**1.5) / np.absolute(2*right_fit_cr[0])
-# Now our radius of curvature is in meters
-print(left_curverad, 'm', right_curverad, 'm')
+#
+# left_fit, right_fit, leftx, lefty, rightx, righty, ploty = line_fit(binary_warped)
+#
+#
+# print(left_fit)
+# print(right_fit)
+#
+#
+#
+#
+# ## Calculate curvature
+#
+# y_eval = np.max(ploty)
+#
+# ym_per_pix = 20/1280  # meters per pixel in y dimension
+# xm_per_pix = 3.7/620  # meters per pixel in x dimension
+#
+#
+#
+# # Fit new polynomials to x,y in world space
+# left_fit_cr = np.polyfit(lefty*ym_per_pix, leftx*xm_per_pix, 2)
+# right_fit_cr = np.polyfit(righty*ym_per_pix, rightx*xm_per_pix, 2)
+#
+# print(left_fit_cr, right_fit_cr)
+# # left_fit_cr = left_fitx
+# # right_fit_cr = right_fitx
+# # Calculate the new radii of curvature
+# y_eval = np.max(ploty)//2
+# left_curverad = ((1 + (2*left_fit_cr[0]*y_eval + left_fit_cr[1])**2)**1.5) / np.absolute(2*left_fit_cr[0])
+# right_curverad = ((1 + (2*right_fit_cr[0]*y_eval + right_fit_cr[1])**2)**1.5) / np.absolute(2*right_fit_cr[0])
+# # Now our radius of curvature is in meters
+# print(left_curverad, 'm', right_curverad, 'm')

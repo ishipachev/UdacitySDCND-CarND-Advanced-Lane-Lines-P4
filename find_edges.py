@@ -62,32 +62,7 @@ def dir_thresh(img, sobel_kernel=3, thresh=(0, np.pi/2)):
     # Return the binary image
     return binary_output
 
-
-def pipeline(img, s_thresh=(170, 255), sx_thresh=(20, 100)):
-    img = np.copy(img)
-    # Convert to HLS color space and separate the V channel
-    hls = cv2.cvtColor(img, cv2.COLOR_RGB2HLS).astype(np.float)
-    l_channel = hls[:, :, 1]
-    s_channel = hls[:, :, 2]
-    # Sobel x
-    sobelx = cv2.Sobel(l_channel, cv2.CV_64F, 1, 0)  # Take the derivative in x
-    abs_sobelx = np.absolute(sobelx)  # Absolute x derivative to accentuate lines away from horizontal
-    scaled_sobel = np.uint8(255 * abs_sobelx / np.max(abs_sobelx))
-
-    # Threshold x gradient
-    sxbinary = np.zeros_like(scaled_sobel)
-    sxbinary[(scaled_sobel >= sx_thresh[0]) & (scaled_sobel <= sx_thresh[1])] = 1
-
-    # Threshold color channel
-    s_binary = np.zeros_like(s_channel)
-    s_binary[(s_channel >= s_thresh[0]) & (s_channel <= s_thresh[1])] = 1
-    # Stack each channel
-    # Note color_binary[:, :, 0] is all 0s, effectively an all black image. It might
-    # be beneficial to replace this channel with something else.
-    color_binary = np.dstack((np.zeros_like(sxbinary), sxbinary, s_binary)) * 255
-    return color_binary
-
-
+#Get only S channel in HLS representation
 def get_s_channel(img):
     hls = cv2.cvtColor(img, cv2.COLOR_RGB2HLS).astype(np.float)
     s_channel = hls[:, :, 2]
@@ -107,61 +82,48 @@ def color_thresh(s_channel, s_thresh=(0, 255)):
 # Main function to get edges from picture
 def find_edges(img):
     s_channel = get_s_channel(img)
+    s_binary = color_thresh(s_channel, s_thresh=(140, 255))
+
+    mag_binary = mag_thresh(img, sobel_kernel=3, mag_thresh=(30, 100))
+    dir_binary = dir_thresh(img, sobel_kernel=15, thresh=(0.7, 1.3))
+
+    edge_binary = np.zeros_like(s_binary)
+    edge_binary[(mag_binary == 1) & (dir_binary == 1)] = 1
+
+    res_binary = np.zeros_like(edge_binary)
+    res_binary[(s_binary == 1) | (edge_binary == 1)] = 1
+
+    return res_binary
+
+## Local function for testing purpose
+def local_fun():
+    fname = "test_images/test2.jpg"
+    image = cv2.imread(fname)
+
+    # Choose a Sobel kernel size
+    ksize = 3  # Choose a larger odd number to smooth gradient measurements
+    # Apply each of the thresholding functions
+    gradx = abs_sobel_thresh(image, orient='x', sobel_kernel=ksize, thresh=(20, 100))
+    grady = abs_sobel_thresh(image, orient='y', sobel_kernel=ksize, thresh=(20, 100))
+    mag_binary = mag_thresh(image, sobel_kernel=ksize, mag_thresh=(30, 100))
+    dir_binary = dir_thresh(image, sobel_kernel=15, thresh=(0.7, 1.3))
+
+    s_channel = get_s_channel(image)
     s_binary = color_thresh(s_channel, s_thresh=(170, 255))
-    return s_binary
 
-fname = "test_images/test2.jpg"
-image = cv2.imread(fname)
+    pic_list = [gradx, grady, mag_binary, dir_binary, s_channel, s_binary]
+    title_list = ["gradx", "grady", "mag_binary", "dir_binary", "s_channel", "s_binary"]
+    fig, axes = plt.subplots(2, 3)
+    for i in range(len(pic_list)):
+        axes.flat[i].imshow(pic_list[i], cmap='gray')
+        axes.flat[i].set_title(title_list[i])
 
-# Choose a Sobel kernel size
-ksize = 3  # Choose a larger odd number to smooth gradient measurements
-# Apply each of the thresholding functions
-gradx = abs_sobel_thresh(image, orient='x', sobel_kernel=ksize, thresh=(20, 100))
-grady = abs_sobel_thresh(image, orient='y', sobel_kernel=ksize, thresh=(20, 100))
-mag_binary = mag_thresh(image, sobel_kernel=ksize, mag_thresh=(30, 100))
-dir_binary = dir_thresh(image, sobel_kernel=15, thresh=(0.7, 1.3))
+    plt.show()
 
-s_channel = get_s_channel(image)
-s_binary = color_thresh(s_channel, s_thresh=(170, 255))
-
-pic_list = [gradx, grady, mag_binary, dir_binary, s_channel, s_binary]
-title_list = ["gradx", "grady", "mag_binary", "dir_binary", "s_channel", "s_binary"]
-# cv2.imshow('gradx', gradx)
-# cv2.imshow('grady', grady)
-# cv2.imshow('mag_binary', mag_binary)
-# cv2.imshow('dir_binary', dir_binary)
-
-# plt.imshow(gradx)
-# plt.show()
-# plt.imshow(grady)
-# plt.show()
-# plt.imshow(mag_binary)
-# plt.show()
-# plt.imshow(dir_binary)
-# plt.show()
+    # Save all pics in output folder
+    for i in range(len(pic_list)):
+        plt.imsave(os.path.join('output', title_list[i] + '.jpg'), pic_list[i], cmap=cm.gray)
 
 
-# f, (ax1, ax2, ax3, ax4) = plt.subplots(1, 2)
-# f, (ax1, ax2, ax3, ax4) = plt.subplots(1, 4)
-# # f.tight_layout()
-# ax1.imshow(gradx, cmap='gray')
-# ax1.set_title('gradx', fontsize=50)
-# ax2.imshow(grady, cmap='gray')
-# ax2.set_title('grady', fontsize=50)
-# ax3.imshow(mag_binary, cmap='gray')
-# ax3.set_title('mag_binary', fontsize=50)
-# ax4.imshow(dir_binary, cmap='gray')
-# ax4.set_title('dir_binary', fontsize=50)
-
-fig, axes = plt.subplots(2, 3)
-cnt = 0
-for i in range(len(pic_list)):
-    axes.flat[i].imshow(pic_list[i], cmap='gray')
-    axes.flat[i].set_title(title_list[i])
-
-plt.show()
-
-# Save all pics in output folder
-for i in range(len(pic_list)):
-    plt.imsave(os.path.join('output', title_list[i] + '.jpg'), pic_list[i], cmap=cm.gray)
+# local_fun()
 
