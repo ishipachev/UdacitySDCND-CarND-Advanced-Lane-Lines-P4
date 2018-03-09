@@ -2,9 +2,6 @@ import numpy as np
 import cv2
 
 
-# path_binary_warped = "output/binary_warped.jpg"
-# binary_warped = cv2.imread(path_binary_warped, 0)
-
 def line_fit(binary_warped):
     # Assuming you have created a warped binary image called "binary_warped"
     # Take a histogram of the bottom half of the image
@@ -80,6 +77,8 @@ def line_fit(binary_warped):
 
     # Generate x and y values for plotting
     ploty = np.linspace(0, binary_warped.shape[0] - 1, binary_warped.shape[0])
+
+    #Plotting section, left only for testing purpose
     # left_fitx = left_fit[0] * ploty ** 2 + left_fit[1] * ploty + left_fit[2]
     # right_fitx = right_fit[0] * ploty ** 2 + right_fit[1] * ploty + right_fit[2]
 
@@ -91,7 +90,6 @@ def line_fit(binary_warped):
     # plt.xlim(0, 720)
     # plt.ylim(1280, 0)
     # plt.show()
-
 
     ym_per_pix = 30/1280  # meters per pixel in y dimension
     xm_per_pix = 3.7/620  # meters per pixel in x dimension

@@ -7,7 +7,7 @@ from bv_transform import bv_transform
 from line_fit import line_fit
 
 
-def read_distort_params(filename):
+def read_camera_params(filename):
     with open(filename, 'rb') as f:
         # The protocol version used is detected automatically, so we do not
         # have to specify it.
@@ -78,13 +78,18 @@ def pipeline(img, mtx, dist):
 
 # Read matrix and distortion parameter of the camera calculated by calibrate.py
 params_path = 'output/camera_params.pickle'
-mtx, dist = read_distort_params(params_path)
+mtx, dist = read_camera_params(params_path)
+
+# test = cv2.imread("test_images/straight_lines1.jpg", cv2.IMREAD_COLOR)
+# undist = cv2.undistort(test, mtx, dist, None, mtx)
+# warped = bv_transform(undist)
+# cv2.imwrite("writeup_pics/warped_img1.jpg", warped)
 
 video_path = "project_video.mp4"
 
 # Define the codec and create VideoWriter object
 fourcc = cv2.VideoWriter_fourcc(*'XVID')
-out = cv2.VideoWriter('output/output.avi', fourcc, 25.0, (1280, 720), isColor=True)
+out = cv2.VideoWriter('output/output1.avi', fourcc, 25.0, (1280, 720), isColor=True)
 
 cap = cv2.VideoCapture(video_path)
 cnt = 0
