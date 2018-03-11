@@ -91,15 +91,26 @@ def line_fit(binary_warped):
     # plt.ylim(1280, 0)
     # plt.show()
 
-    ym_per_pix = 30/1280  # meters per pixel in y dimension
-    xm_per_pix = 3.7/620  # meters per pixel in x dimension
+    offsetx = 150  # offset from bv_transform
+    ym_per_pix = 32/out_img.shape[0]  # meters per pixel in y dimension
+    xm_per_pix = 3.7/(out_img.shape[1] - offsetx * 2)  # meters per pixel in x dimension
     y_eval = np.max(ploty) // 2
     left_fit_cr = np.polyfit(lefty*ym_per_pix, leftx*xm_per_pix, 2)
     right_fit_cr = np.polyfit(righty*ym_per_pix, rightx*xm_per_pix, 2)
     left_curverad = ((1 + (2*left_fit_cr[0]*y_eval + left_fit_cr[1])**2)**1.5) / np.absolute(2*left_fit_cr[0])
     right_curverad = ((1 + (2*right_fit_cr[0]*y_eval + right_fit_cr[1])**2)**1.5) / np.absolute(2*right_fit_cr[0])
 
-    return left_fit, right_fit, left_curverad, right_curverad
+    car_position = ((right_fit[2] - left_fit[2]) / 2 - out_img.shape[1]) * xm_per_pix
+
+    # Calculate position car on the lane, evaluating polynomials at the bottom point
+    y_bot = out_img.shape[0]
+    bottom_left = y_bot**2 * left_fit[0] + y_bot * left_fit[1] + left_fit[2]
+    bottom_right = y_bot**2 * right_fit[0] + y_bot * right_fit[1] + right_fit[2]
+
+    # Get middle point between left and right lane and calculate related distance to line center
+    car_position = ((bottom_left + bottom_right) / 2 - midpoint) * xm_per_pix
+
+    return left_fit, right_fit, left_curverad, right_curverad, car_position
 
 #
 # left_fit, right_fit, leftx, lefty, rightx, righty, ploty = line_fit(binary_warped)

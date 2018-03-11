@@ -81,17 +81,23 @@ def color_thresh(s_channel, s_thresh=(0, 255)):
 
 # Main function to get edges from picture
 def find_edges(img):
-    s_channel = get_s_channel(img)
-    s_binary = color_thresh(s_channel, s_thresh=(140, 255))
+    # s_channel = get_s_channel(img)
+    # s_binary = color_thresh(s_channel, s_thresh=(160, 255))
 
-    mag_binary = mag_thresh(img, sobel_kernel=3, mag_thresh=(30, 100))
-    dir_binary = dir_thresh(img, sobel_kernel=15, thresh=(0.7, 1.3))
+    # mag_binary = mag_thresh(img, sobel_kernel=3, mag_thresh=(20, 200))
+    # dir_binary = dir_thresh(img, sobel_kernel=15, thresh=(1, 1.5))
 
-    edge_binary = np.zeros_like(s_binary)
-    edge_binary[(mag_binary == 1) & (dir_binary == 1)] = 1
+    # edge_binary = np.zeros_like(s_binary)
+    # edge_binary[(mag_binary == 1) | (dir_binary == 1)] = 1
+    # edge_binary[(dir_binary == 1)] = 1
 
-    res_binary = np.zeros_like(edge_binary)
-    res_binary[(s_binary == 1) | (edge_binary == 1)] = 1
+    # res_binary = np.zeros_like(edge_binary)
+    # res_binary[(s_binary == 1) & (edge_binary == 1)] = 1
+    # res_binary[(s_binary == 1)] = 1
+    # res_binary[(edge_binary == 1)] = 1
+    
+    # Comb_thresh works better than other methods
+    res_binary = comb_thresh(img)
 
     return res_binary
 
@@ -126,3 +132,31 @@ def local_fun():
 
 
 # local_fun()
+
+
+def select_yellow(image):
+    hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
+    lower = np.array([20, 60, 60])
+    upper = np.array([38, 174, 250])
+    mask = cv2.inRange(hsv, lower, upper)
+
+    return mask
+
+
+def select_white(image):
+    lower = np.array([202, 202, 202])
+    upper = np.array([255, 255, 255])
+    mask = cv2.inRange(image, lower, upper)
+
+    return mask
+
+
+def comb_thresh(image):
+    yellow = select_yellow(image)
+    white = select_white(image)
+
+    combined_binary = np.zeros_like(yellow)
+    combined_binary[(yellow >= 1) | (white >= 1)] = 1
+
+    return combined_binary
+

@@ -18,7 +18,7 @@ def bv_transform(img):
     point4 = np.array([1032, 673], dtype=np.float32)
 
     src = np.array([point1, point2, point3, point4])
-    offset = 100
+    offset = 150
 
     dst = np.float32([[offset, img_size[1]],
                       [offset, 0],

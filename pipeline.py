@@ -41,21 +41,20 @@ def draw_lines(image, warped, left_fit, right_fit, M):
     return result
 
 
-def draw_curv_and_dist(img, left_fit, right_fit, left_curverad, right_curverad):
+def draw_curv_and_dist(img, left_curverad, right_curverad, car_position):
 
-    xm_per_pix = 3.7/620  # meters per pixel in x dimension
+    #Calculate midle position in pixels related to center of image and convert it in meters
 
-    mid_pos = (right_fit[2] - left_fit[2]) / 2 * xm_per_pix
-    mid_str = "Vehicle position: " + str(mid_pos)
+    car_position_str = "Vehicle position: " + str(round(car_position, 2)) + "m"
 
-    left_curv_str = "Curvature radius left line: " + str(left_curverad) + "m"
-    left_curv_str = "Curvature radius right line: " + str(right_curverad) + "m"
+    # left_curv_str = "Curvature radius left line: " + str(left_curverad) + "m"
+    # right_curverad_str = "Curvature radius right line: " + str(right_curverad) + "m"
+    curverad_str = "Curvature radius right line: " + str((left_curverad + right_curverad) / 2) + "m"
 
-    font = cv2.FONT_HERSHEY_SIMPLEX
-    # cv2.putText(img, mid_str, (10, 20), font, 0.2, (0, 0, 0), 2, cv2.LINE_AA)
-    cv2.putText(img, mid_str, (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 0))
-    cv2.putText(img, left_curv_str, (10, 60), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 0))
-    cv2.putText(img, left_curv_str, (10, 90), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 0))
+    cv2.putText(img, car_position_str, (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 0))
+    cv2.putText(img, curverad_str, (10, 60), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 0))
+    # cv2.putText(img, left_curv_str, (10, 60), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 0))
+    # cv2.putText(img, right_curverad_str, (10, 90), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 0))
 
 def pipeline(img, mtx, dist):
     undist = cv2.undistort(img, mtx, dist, None, mtx)
@@ -70,9 +69,13 @@ def pipeline(img, mtx, dist):
     # plt.imshow(warped, cmap="gray")
     # plt.show()
 
-    left_fit, right_fit, left_curverad, right_curverad = line_fit(warped)
-    result = draw_lines(img, warped, left_fit, right_fit, M)
-    draw_curv_and_dist(result, left_fit, right_fit, left_curverad, right_curverad)
+    left_fit, right_fit, left_curverad, right_curverad, car_position = line_fit(warped)
+    result = draw_lines(undist, warped, left_fit, right_fit, M)
+    draw_curv_and_dist(result, left_curverad, right_curverad, car_position)
+
+    # out_img = (np.dstack((edges, edges, edges)) * 255)
+    # out_img = out_img.astype(np.uint8)
+    # return out_img
 
     return result
 
@@ -89,7 +92,7 @@ video_path = "project_video.mp4"
 
 # Define the codec and create VideoWriter object
 fourcc = cv2.VideoWriter_fourcc(*'XVID')
-out = cv2.VideoWriter('output/output1.avi', fourcc, 25.0, (1280, 720), isColor=True)
+out = cv2.VideoWriter('output/output.avi', fourcc, 25.0, (1280, 720), isColor=True)
 
 cap = cv2.VideoCapture(video_path)
 cnt = 0
